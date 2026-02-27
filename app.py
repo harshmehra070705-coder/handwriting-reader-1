@@ -4,9 +4,10 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Gemini API key environment variable se lega
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+# ✅ UPDATED MODEL NAME
+model = genai.GenerativeModel('gemini-2.0-flash')
 
 @app.route('/')
 def index():
@@ -114,7 +115,6 @@ def index():
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            letter-spacing: 0.5px;
         }
 
         button:hover {
@@ -208,7 +208,7 @@ def index():
 <body>
     <div class="container">
         <h1>Handwriting Reader</h1>
-        <p class="subtitle">Upload a handwritten image and AI will read it for you</p>
+        <p class="subtitle">Upload a handwritten image and AI will read it</p>
 
         <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
             <div class="upload-icon">📷</div>
@@ -222,7 +222,7 @@ def index():
         <p class="file-name" id="fileName"></p>
 
         <button id="analyzeBtn" onclick="analyzeImage()" disabled>
-            🔍 Read Handwriting
+            Read Handwriting
         </button>
 
         <div class="loading" id="loading">
@@ -231,9 +231,9 @@ def index():
         </div>
 
         <div class="result" id="result">
-            <h3>📝 Extracted Text:</h3>
+            <h3>Extracted Text:</h3>
             <div class="result-text" id="resultText"></div>
-            <button class="copy-btn" onclick="copyText()">📋 Copy Text</button>
+            <button class="copy-btn" onclick="copyText()">Copy Text</button>
         </div>
 
         <p class="footer">Powered by Google Gemini AI</p>
@@ -260,11 +260,7 @@ def index():
         async function analyzeImage() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
-
-            if (!file) {
-                alert('Please upload an image first!');
-                return;
-            }
+            if (!file) { alert('Upload image first!'); return; }
 
             const formData = new FormData();
             formData.append('image', file);
@@ -278,16 +274,13 @@ def index():
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await response.json();
-
                 if (data.error) {
                     document.getElementById('resultText').innerHTML =
                         '<span class="error-text">Error: ' + data.error + '</span>';
                 } else {
                     document.getElementById('resultText').textContent = data.text;
                 }
-
                 document.getElementById('result').style.display = 'block';
             } catch (error) {
                 document.getElementById('resultText').innerHTML =
