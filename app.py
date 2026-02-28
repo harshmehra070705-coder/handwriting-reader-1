@@ -2,6 +2,7 @@ import os
 import base64
 from flask import Flask, request, render_template_string
 from google import genai
+from google.genai import types
 
 app = Flask(__name__)
 
@@ -39,7 +40,7 @@ HTML_PAGE = """
 
     {% if image_preview %}
         <h3>Uploaded Image:</h3>
-        <img src="data:image/png;base64,{{ image_preview }}">
+        <img src="data:image/jpeg;base64,{{ image_preview }}">
     {% endif %}
 
     {% if result %}
@@ -62,16 +63,17 @@ def extract():
     try:
         image = request.files["image"]
         image_bytes = image.read()
+
         image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
         response = client.models.generate_content(
             model="gemini-2.0-flash",
             contents=[
                 "You are an expert handwriting reader. Read the cursive handwritten text carefully and convert it into clean, properly formatted, easy-to-understand typed text. Only return the cleaned text.",
-                {
-                    "mime_type": image.mimetype,
-                    "data": image_bytes,
-                },
+                types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=image.mimetype,
+                ),
             ],
         )
 
