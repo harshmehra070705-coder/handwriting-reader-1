@@ -4,6 +4,8 @@ from flask import Flask, request, jsonify
 import google.generativeai as genai
 from google import genai
 
+app = Flask(__name__)
+
 client = genai.Client(api_key="YOUR_API_KEY")
 
 response = client.models.generate_content(
@@ -13,9 +15,20 @@ response = client.models.generate_content(
 
 print(response.text)
 
+@app.route("/")
+def home():
+    return "App is running ✅"
+
 @app.route('/')
 def index():
-    return '''
+    return
+    if __name__ == "__main__":
+
+port = int(os.environ.get("PORT", 10000))
+app.run(host="0.0.0.0", port=port)
+Deploy karo.
+
+'''
 <!DOCTYPE html>
 <html lang="en">
 <head>
