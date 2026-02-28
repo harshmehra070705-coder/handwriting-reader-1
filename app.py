@@ -2,11 +2,16 @@ import os
 import time
 from flask import Flask, request, jsonify
 import google.generativeai as genai
+from google import genai
 
-app = Flask(__name__)
+client = genai.Client(api_key="YOUR_API_KEY")
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-2.0-flash-lite')
+response = client.models.generate_content(
+    model="gemini-1.5-flash",
+    contents="Hello"
+)
+
+print(response.text)
 
 @app.route('/')
 def index():
