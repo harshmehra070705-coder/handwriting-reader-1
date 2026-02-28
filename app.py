@@ -4,43 +4,56 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# ✅ Get API Key
+# ✅ API Key
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 if not API_KEY:
-    raise ValueError("GOOGLE_API_KEY environment variable not set")
+    raise ValueError("GOOGLE_API_KEY not set")
 
 genai.configure(api_key=API_KEY)
 
-# ✅ Use stable model
+# ✅ Vision Model (Best for handwriting)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 
 @app.route("/")
 def home():
-    return "Gemini App Running ✅"
+    return "Cursive Handwriting Reader Running ✅"
 
 
-@app.route("/generate", methods=["POST"])
-def generate():
+@app.route("/extract-text", methods=["POST"])
+def extract_text():
     try:
-        data = request.get_json()
-        prompt = data.get("prompt")
+        if "image" not in request.files:
+            return jsonify({"error": "No image uploaded"}), 400
 
-        if not prompt:
-            return jsonify({"error": "Prompt is required"}), 400
+        image = request.files["image"]
+        image_bytes = image.read()
 
-        response = model.generate_content(prompt)
+        # ✅ Strong prompt for cursive handwriting
+        response = model.generate_content(
+            [
+                """You are an expert handwriting reader.
+                The image contains cursive or unclear handwritten text.
+                Carefully read the handwriting.
+                Convert it into clear, properly formatted, easy-to-understand text.
+                If any word is unclear, make your best intelligent guess.
+                Do not explain anything. Only return the cleaned text.""",
+                {
+                    "mime_type": image.mimetype,
+                    "data": image_bytes
+                }
+            ]
+        )
 
         return jsonify({
-            "response": response.text
+            "converted_text": response.text
         })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# ✅ Important for Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
