@@ -1,32 +1,49 @@
 import os
-import time
 from flask import Flask, request, jsonify
 import google.generativeai as genai
-from google import genai
 
 app = Flask(__name__)
 
-client = genai.Client(api_key="YOUR_API_KEY")
+# ✅ Get API Key
+API_KEY = os.environ.get("GOOGLE_API_KEY")
 
-response = client.models.generate_content(
-    model="gemini-1.5-flash",
-    contents="Hello"
-)
+if not API_KEY:
+    raise ValueError("GOOGLE_API_KEY environment variable not set")
 
-print(response.text)
+genai.configure(api_key=API_KEY)
+
+# ✅ Use stable model
+model = genai.GenerativeModel("gemini-1.5-flash")
+
 
 @app.route("/")
 def home():
-    return "App is running ✅"
+    return "Gemini App Running ✅"
 
-@app.route('/')
-def index():
-    return
-    if __name__ == "__main__":
 
-port = int(os.environ.get("PORT", 10000))
-app.run(host="0.0.0.0", port=port)
-Deploy karo.
+@app.route("/generate", methods=["POST"])
+def generate():
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt")
+
+        if not prompt:
+            return jsonify({"error": "Prompt is required"}), 400
+
+        response = model.generate_content(prompt)
+
+        return jsonify({
+            "response": response.text
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ✅ Important for Render
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
 '''
 <!DOCTYPE html>
